@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Waterfall Visualizer</title>
+    <!-- Include Plotly.js library -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <h1>Waterfall Visualizer</h1>
+
+    <div id="heatmap-container" style="width: 800px; height: 600px;"></div>
+    <script type="text/javascript">
+        // Function to initialize the Plotly plot
+        function initializePlot() {
+            var data = [{
+                z: Array(1).fill(Array(1).fill(0)),
+                type: 'heatmap',
+                zmin: 0.0,
+                zmax: 1.0,
+                colorscale: 'Blues',
+                colorbar: {
+                    title: 'Power (dBFS)',
+                    titleside: 'bottom'
+                  }
+            }];
+
+            var layout = {
+                title: '',
+                xaxis: { title: 'Frequency' },
+                yaxis: { title: 'Time' },
+            };
+
+            Plotly.newPlot('heatmap-container', data, layout);
+        }
+
+        // Function to handle SSE updates
+        function setupSSE() {
+            // Connect to the SSE endpoint defined in app.py
+            const eventSource = new EventSource("/events");
+
+            eventSource.onmessage = function(event) {
+                // Parse the incoming JSON data
+                const newZData = JSON.parse(event.data);
+                
+                // Update the 'z' data of the existing Plotly plot
+                // Plotly.restyle updates specified attributes of the traces
+                Plotly.restyle('heatmap-container', 'z', [newZData]);
+            };
+
+            eventSource.onerror = function(err) {
+                console.error("EventSource failed:", err);
+                eventSource.close();
+            };
+        }
+
+        // Initialize everything when the page loads
+        window.onload = function() {
+            initializePlot();
+            setupSSE();
+        };
+    </script>
+
+    <form method="POST">
+        <!-- Carrier Frequency Input -->
+        <label for="carr_freq_input">Carrier Frequency: </label>
+        <input type="number" id="carr_freq_input" name="carr_freq_input" min="1" step="1" value="{{ carr_freq_input_value }}">
+        <select id="carr_freq_input_unit_dropdown" name="carr_freq_input_unit_dropdown">
+            <option value="Hz">Hz</option>
+            <option value="kHz">kHz</option>
+            <option value="MHz" selected>MHz</option>
+            <option value="GHz">GHz</option>
+        </select><br><br>
+
+        <!-- Sampling Frequency Input -->
+        <label for="sample_freq_input">Sampling Frequency: </label>
+        <input type="number" id="sample_freq_input" name="sample_freq_input" min="1" step="1" value="{{ sample_freq_input_value }}">
+        <select id="sample_freq_input_unit_dropdown" name="sample_freq_input_unit_dropdown">
+            <option value="Hz">Hz</option>
+            <option value="kHz">kHz</option>
+            <option value="MHz" selected>MHz</option>
+            <option value="GHz">GHz</option>
+        </select><br><br>
+
+        <!-- Gain Input -->
+        <label for="gain_input">Gain: </label>
+        <input type="number" id="gain_input" name="gain_input" min="-100" max="100" step="1" value="{{ gain_input_value }}">
+        <label for="gain_input_unit"> dB </label>
+        <br><br>
+
+        <!-- Recv Buffer Size -->
+        <label for="recv_buffer_input">Rx Buffer Size: </label>
+        <input type="number" id="recv_buffer_input" name="recv_buffer_input" min="0" step="1" value="{{ recv_buffer_input_value }}">
+        <br><br>
+
+        <button type="submit" style="font-size: 14px; width: 100px; height: 20px;">Retune</button>
+    </form>
+
+</body>
+</html>

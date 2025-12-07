@@ -1,0 +1,24 @@
+[project]
+name = "waterfall-viz"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Brandon Liston",email = "liston0456@aol.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy (>=2.3.5,<3.0.0)",
+    "matplotlib (>=3.10.7,<4.0.0)",
+    "ruff (>=0.14.8,<0.15.0)",
+    "isort (>=7.0.0,<8.0.0)",
+    "flask (>=3.1.2,<4.0.0)",
+    "flask-socketio (>=5.5.1,<6.0.0)"
+]
+
+[tool.poetry]
+packages = [{include = "waterfall_viz"}]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
