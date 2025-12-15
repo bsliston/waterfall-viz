@@ -1,19 +1,33 @@
-from typing import Iterable
-
 import numpy as np
 import time
 
-from waterfall_viz.signals import pulsed_tone_signal_generator
-from waterfall_viz import constants
+from waterfall_viz.generators.signal_generator import SignalGenerator
+
+
+FREQUENCY_CONVERSIONS: dict[str, float] = {
+    "Hz": 1.0,
+    "kHz": 1.0e3,
+    "MHz": 1.0e6,
+    "GHz": 1.0e9,
+}
+
+
+def convert_frequency_units(value: float, unit: str, target_unit: str = "Hz") -> float:
+    value_hz = value * FREQUENCY_CONVERSIONS[unit]
+    return value_hz / FREQUENCY_CONVERSIONS[target_unit]
+    
 
 def waterfall_generator(
-    signal_generator: Iterable[np.ndarray] = None,
-    history: int = 200, 
-    buffer_size: int = 50240,
-    fft_size: int = 256,
+    signal_generator: SignalGenerator,
+    waterfall_duration_sec: float, 
+    fft_size: int,
 ) -> list:
-    waterfall_data = np.zeros((history, fft_size))
-    for signal in pulsed_tone_signal_generator(buffer_size):
+    history_num_samples = int(
+        waterfall_duration_sec * signal_generator.sample_rate_hz
+    )
+    history_depth_size = history_num_samples // signal_generator.buffer_size
+    waterfall_data = np.zeros((history_depth_size, fft_size))
+    for signal in signal_generator:
         t0 = time.time()
         sxx = np.fft.fftshift(np.fft.fft(signal, n=fft_size))
         sxx = 10.0 * np.log10(np.abs(sxx) ** 2.0)
@@ -37,10 +51,8 @@ def waterfall_generator(
         # print(time.time() - t4)
         # print()
         
-        time.sleep(1.0 / constants.FRAMERATE_HZ)
+        # Sleep for simulated duration of generated signal length.
+        signal_duration_sec = signal.size / signal_generator.sample_rate_hz
+        print(signal_duration_sec)
+        time.sleep(signal_duration_sec)
         yield f"data:{sse_data}\n\n"
-
-    
-if __name__ == "__main__":
-    for signal in waterfall_generator(history=5, buffer_size=128):
-        breakpoint()
