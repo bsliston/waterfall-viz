@@ -1,5 +1,7 @@
 import numpy as np
 
+import time
+
 from waterfall_viz.signals import tone
 from waterfall_viz.generators import SignalGenerator
 
@@ -31,4 +33,7 @@ class PulsedToneGenerator(SignalGenerator):
             self._start_idx += self._buffer_size
             if self._start_idx >= self._signal.size:
                 self._start_idx = 0
+                
+            signal_duration_sec = signal_buffer.size / self.sample_rate_hz
+            time.sleep(signal_duration_sec)
             return signal_buffer

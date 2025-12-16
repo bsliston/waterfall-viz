@@ -71,6 +71,15 @@ def index():
     sample_freq_input_value = convert_frequency_units(
         FIELD_INPUTS.sample_freq_input_hz, "Hz", constants.DEFAULT_FREQ_UNIT
     )
+    
+    sse_update_rate = int(
+        1.0 / (FIELD_INPUTS.recv_buffer_input / FIELD_INPUTS.sample_freq_input_hz)
+    )
+    
+    waterfall_history_num_samples = int(
+        FIELD_INPUTS.waterfall_duration_input * FIELD_INPUTS.sample_freq_input_hz
+    )
+    waterfall_history_depth_size = waterfall_history_num_samples // FIELD_INPUTS.recv_buffer_input
     return render_template(
         'index.html',
         carr_freq_input_value=carr_freq_input_value,
@@ -79,7 +88,10 @@ def index():
         recv_buffer_input_value=FIELD_INPUTS.recv_buffer_input,
         waterfall_duration_input_value=FIELD_INPUTS.waterfall_duration_input,
         waterfall_nfft_input_value=FIELD_INPUTS.waterfall_nfft_input,
-        
+        sse_update_rate = sse_update_rate,
+        waterfall_width=FIELD_INPUTS.waterfall_nfft_input,
+        waterfall_height=waterfall_history_depth_size,
+        waterfall_colorbar_zmin=constants.WATERFALL_FULLSCALE_MIN_POWER_DB,
     )
 
 

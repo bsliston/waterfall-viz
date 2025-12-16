@@ -9,15 +9,34 @@
 </head>
 <body>
     <h1>Waterfall Visualizer</h1>
-
+    
     <div id="heatmap-container" style="width: 800px; height: 600px;"></div>
     <script type="text/javascript">
-        // Function to initialize the Plotly plot
+        const sample_rate_mhz = {{ sample_freq_input_value | tojson }};
+        const waterfall_width = {{ waterfall_width | tojson }};
+        const waterfall_height = {{ waterfall_height | tojson }};
+        const waterfall_duration_sec = {{ waterfall_duration_input_value | tojson }};
+        const waterfall_colorbar_zmin = {{ waterfall_colorbar_zmin | tojson }};
+
+        function linspace(start, stop, num, endpoint = true) {
+            const div = endpoint ? (num - 1) : num;
+            const step = (stop - start) / div;
+            return Array.from({ length: num }, (_, i) => start + step * i);
+        }
+        const waterfall_freq_axis = linspace(
+            -sample_rate_mhz / 2.0, sample_rate_mhz/2.0, waterfall_width
+        );
+        const waterfall_time_axis = linspace(
+            waterfall_duration_sec, 0.0, waterfall_height
+        );
+
         function initializePlot() {
             var data = [{
+                x: waterfall_freq_axis,
+                y: waterfall_time_axis,
                 z: Array(1).fill(Array(1).fill(0)),
                 type: 'heatmap',
-                zmin: -80.0,
+                zmin: waterfall_colorbar_zmin,
                 zmax: 0.0,
                 colorscale: 'Blues',
                 colorbar: {
@@ -28,24 +47,30 @@
 
             var layout = {
                 title: '',
-                xaxis: { title: 'Frequency' },
-                yaxis: { title: 'Time' },
+                xaxis: {
+                    title: {
+                      text: 'Baseband Frequency (MHz)',
+                      font: { size: 18 }
+                    }
+                  },
+                  yaxis: {
+                    title: {
+                      text: 'Time History (sec.)',
+                      font: { size: 18 }
+                    }
+                  },
             };
 
             Plotly.newPlot('heatmap-container', data, layout);
         }
 
-        // Function to handle SSE updates
         function setupSSE() {
-            // Connect to the SSE endpoint defined in app.py
             const eventSource = new EventSource("/events");
 
             eventSource.onmessage = function(event) {
-                // Parse the incoming JSON data
                 const newZData = JSON.parse(event.data);
-                
-                // Update the 'z' data of the existing Plotly plot
-                // Plotly.restyle updates specified attributes of the traces
+
+                // Only restyle z heatmap pixel values.
                 Plotly.restyle('heatmap-container', 'z', [newZData]);
             };
 
@@ -55,12 +80,17 @@
             };
         }
 
-        // Initialize everything when the page loads
         window.onload = function() {
             initializePlot();
             setupSSE();
         };
     </script>
+
+    <label>
+        Plot Frame Update Rate:  {{ sse_update_rate }} FPS<br>
+        Waterfall Pixel Resolution:  {{ waterfall_height }} x {{ waterfall_width }}<br>
+        <br>
+    </label>
 
     <form method="POST">
         <!-- Carrier Frequency Input -->

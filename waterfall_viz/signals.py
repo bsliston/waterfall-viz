@@ -8,34 +8,3 @@ def tone(
 ) -> np.ndarray:
     time_sec = np.arange(0.0, duration_sec, 1.0 / sample_rate_hz)
     return np.exp(1j * 2 * np.pi * offset_freq_hz * time_sec)
-
-
-class PulsedToneIterator:
-    def __init__(
-        self,
-        buffer_size: int,
-        sample_rate_hz: float = 1.024e6,
-        offset_freq_hz: float = 10e3,
-        duration_sec: float = 1.0
-    ) -> None:
-        self._buffer_size = buffer_size
-        self._sample_rate_hz = sample_rate_hz
-        self._offset_freq_hz = offset_freq_hz
-        self._duration_sec = duration_sec
-        
-        self._start_idx: int = 0
-        self._signal = tone(sample_rate_hz, offset_freq_hz, duration_sec)
-        self._signal[:self._signal.size//2] = 0.0
-        
-    def __iter__(self):
-        return self
-
-    def __next__(self) -> np.ndarray:
-        while True:
-            stop_idx = self._start_idx + self._buffer_size
-            signal_buffer = self._signal[self._start_idx:stop_idx]
-            
-            self._start_idx += self._buffer_size
-            if self._start_idx >= self._signal.size:
-                self._start_idx = 0
-            return signal_buffer
