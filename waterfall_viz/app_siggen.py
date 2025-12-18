@@ -1,10 +1,9 @@
 from typing import NamedTuple
 
-import time
 from flask import Flask, Response, render_template, stream_with_context, request
 
 from waterfall_viz.transforms import waterfall_generator, convert_frequency_units
-from waterfall_viz.generators import RTLSDRSignalGenerator
+from waterfall_viz.generators import PulsedToneGenerator
 from waterfall_viz import constants
 
 
@@ -60,31 +59,12 @@ def get_input_request_fields() -> RequestFieldInputs:
     
     
 FIELD_INPUTS: RequestFieldInputs
-SDR_SIGNAL_GENERATOR: RTLSDRSignalGenerator = None
         
 
 @APP.route('/', methods=['GET', 'POST'])
 def index():
     global FIELD_INPUTS
-    global SDR_SIGNAL_GENERATOR
     FIELD_INPUTS = get_input_request_fields()
-    
-    if SDR_SIGNAL_GENERATOR is None:
-        SDR_SIGNAL_GENERATOR = RTLSDRSignalGenerator(
-            carrier_freq_hz=FIELD_INPUTS.carr_freq_input_hz,
-            sample_rate_hz=FIELD_INPUTS.sample_freq_input_hz,
-            gain_db=FIELD_INPUTS.gain_input,
-            buffer_size=FIELD_INPUTS.recv_buffer_input,
-        )
-    else:
-        SDR_SIGNAL_GENERATOR.update(
-            carrier_freq_hz=FIELD_INPUTS.carr_freq_input_hz,
-            sample_rate_hz=FIELD_INPUTS.sample_freq_input_hz,
-            gain_db=FIELD_INPUTS.gain_input,
-            buffer_size=FIELD_INPUTS.recv_buffer_input,
-        )
-        
-    
     carr_freq_input_value = convert_frequency_units(
         FIELD_INPUTS.carr_freq_input_hz, "Hz", constants.DEFAULT_FREQ_UNIT
     )
@@ -119,12 +99,15 @@ def index():
 @APP.route('/events')
 def sse_data():
     field_inputs = FIELD_INPUTS
-    sdr_signal_generator = SDR_SIGNAL_GENERATOR
-    
     response = Response(
         stream_with_context(
             waterfall_generator(
-                sdr_signal_generator,
+                PulsedToneGenerator(
+                    carrier_freq_hz=field_inputs.carr_freq_input_hz,
+                    sample_rate_hz=field_inputs.sample_freq_input_hz,
+                    gain_db=field_inputs.gain_input,
+                    buffer_size=field_inputs.recv_buffer_input,
+                ),
                 waterfall_duration_sec=field_inputs.waterfall_duration_input,
                 fft_size=field_inputs.waterfall_nfft_input
             )
@@ -138,4 +121,4 @@ def sse_data():
 
 
 if __name__ == '__main__':
-    APP.run(host="0.0.0.0", debug=True)
+    APP.run(debug=True)

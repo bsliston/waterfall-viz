@@ -1,6 +1,6 @@
 # Waterfall visualization constants.
-FRAMERATE_HZ: float = 20.0
 WATERFALL_FULLSCALE_MIN_POWER_DB: float = -80.0
+WATERFALL_COLORSCALE: str = "Viridis"
 
 # Default user inputs.
 DEFAULT_INPUT_CARRIER_FREQ_MHZ: float = 100.0

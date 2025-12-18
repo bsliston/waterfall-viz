@@ -17,6 +17,7 @@
         const waterfall_height = {{ waterfall_height | tojson }};
         const waterfall_duration_sec = {{ waterfall_duration_input_value | tojson }};
         const waterfall_colorbar_zmin = {{ waterfall_colorbar_zmin | tojson }};
+        const waterfall_cmap = {{ waterfall_colorscale | tojson }};
 
         function linspace(start, stop, num, endpoint = true) {
             const div = endpoint ? (num - 1) : num;
@@ -38,7 +39,7 @@
                 type: 'heatmap',
                 zmin: waterfall_colorbar_zmin,
                 zmax: 0.0,
-                colorscale: 'Blues',
+                colorscale: waterfall_cmap,
                 colorbar: {
                     title: 'Power (dBFS)',
                     titleside: 'bottom'
