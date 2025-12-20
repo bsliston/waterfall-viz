@@ -1,5 +1,6 @@
 from typing import NamedTuple
 
+import argparse
 import time
 from flask import Flask, Response, render_template, stream_with_context, request
 
@@ -9,6 +10,17 @@ from waterfall_viz import constants
 
 
 APP = Flask(__name__)
+
+
+def parse_args(args = None):
+    parser = argparse.ArgumentParser(
+        description="Waterfall HTML interface runner."
+    )
+    
+    parser.add_argument(
+        "--port", "-p", type=int, help="Application port", default=5000
+    )
+    return parser.parse_args(args)
 
 
 class RequestFieldInputs(NamedTuple):
@@ -138,7 +150,8 @@ def sse_data():
 
 
 def run_app() -> None:
-    APP.run(host="0.0.0.0", debug=True)
+    args = parse_args()
+    APP.run(host="0.0.0.0", debug=True, port=args.port)
 
 
 if __name__ == '__main__':
