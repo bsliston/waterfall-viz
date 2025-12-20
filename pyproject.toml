@@ -1,6 +1,6 @@
 [project]
 name = "waterfall-viz"
-version = "0.1.0"
+version = "1.0.0"
 description = ""
 authors = [
     {name = "Brandon Liston",email = "liston0456@aol.com"}
