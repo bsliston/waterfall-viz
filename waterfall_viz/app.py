@@ -137,5 +137,9 @@ def sse_data():
     return response
 
 
-if __name__ == '__main__':
+def run_app() -> None:
     APP.run(host="0.0.0.0", debug=True)
+
+
+if __name__ == '__main__':
+    run_app()

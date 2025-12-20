@@ -25,3 +25,6 @@ packages = [{include = "waterfall_viz"}]
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[project.scripts]
+waterfall = "waterfall_viz.app:run_app"
