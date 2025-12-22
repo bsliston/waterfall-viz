@@ -1,5 +1,8 @@
 # Waterfall Visualization 
 
+<img src="figs/waterfall-viz-display.png" alt="Waterfall Visualization Sample Browser Display" width="630" height="670">
+
+
 This repo houses a simple application for interfacing and visualizing with  
 software-defined-radios (SDRs) through a web based application. A time-frequency  
 waterfall of the RF spectrum is the core visualization realized in real-time  
